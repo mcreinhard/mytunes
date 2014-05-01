@@ -21,13 +21,25 @@ var SongQueue = Songs.extend({
         this.playFirst();
       }
       var added = this.at(this.length - 1);
+      var previous = this.at(this.length - 2);
+      if (previous !== undefined) {
+        item.set('previous', previous);
+        previous.set('next', added);
+      }
       added.on('ended', function () {
         this.shift();
         if (this.length) {
+          this.at(0).set('previous', undefined);
           this.playFirst();
         }
       }, this);
       added.on('dequeue', function() {
+        if (added.get('previous') !== undefined) {
+          added.previous.set('next', added.get('next'));
+        }
+        if (added.next !== undefined) {
+          added.next.set('previous', added.get('previous'));
+        }
         this.remove(added);
       },this);
     }, this);
